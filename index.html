@@ -70,7 +70,7 @@
     </header>
     <div class="contenido">
       <div class="menu">
-        <button disabled>Nueva promo (próximamente)</button>
+        <button id="btn-ir-promo" type="button">Nueva promo</button>
         <button id="btn-ir-clientes" type="button">Mis clientes</button>
         <button disabled>Mensajes enviados (próximamente)</button>
       </div>
@@ -113,7 +113,69 @@
       </form>
     </div>
   </div>
+  
+<!-- NUEVA PROMO (ASISTENTE) -->
+  <div id="pantalla-promo" class="oculto">
+    <header>
+      <strong>Nueva promo</strong>
+      <button id="btn-cancelar-promo" class="gris" type="button">Cancelar</button>
+    </header>
+    <div class="contenido">
+      <div class="tarjeta">
 
+        <!-- Paso 1 -->
+        <div id="paso-1" class="paso-promo">
+          <h2>Paso 1 de 4: ¿Qué querés comunicar?</h2>
+          <label for="promo-tipo">Tipo de mensaje</label>
+          <select id="promo-tipo" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
+            <option value="promo">Promo / Descuento</option>
+            <option value="cumple">Regalo de Cumpleaños</option>
+            <option value="evento">Evento o Novedad</option>
+          </select>
+          <button id="btn-paso1-sig" type="button">Siguiente →</button>
+        </div>
+
+        <!-- Paso 2 -->
+        <div id="paso-2" class="paso-promo oculto">
+          <h2>Paso 2 de 4: Mensaje</h2>
+          <label for="p-titulo">Título corto</label>
+          <input id="p-titulo" type="text" placeholder="Ej: 2x1 en Helados">
+          <label for="p-detalle">Detalle</label>
+          <input id="p-detalle" type="text" placeholder="Ej: Comprando 1kg te llevás 1/2kg gratis">
+          <label for="p-vigencia">Vigencia</label>
+          <input id="p-vigencia" type="text" placeholder="Ej: Solo por hoy hasta las 23hs">
+          <button id="btn-paso2-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
+          <button id="btn-paso2-sig" type="button">Siguiente →</button>
+        </div>
+
+        <!-- Paso 3 -->
+        <div id="paso-3" class="paso-promo oculto">
+          <h2>Paso 3 de 4: Destinatarios</h2>
+          <label for="promo-audiencia">¿A quiénes les llega?</label>
+          <select id="promo-audiencia" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
+            <option value="todos">A todos mis clientes activos</option>
+            <option value="inactivos">A los que no vienen hace 30 días</option>
+          </select>
+          <button id="btn-paso3-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
+          <button id="btn-paso3-sig" type="button">Siguiente →</button>
+        </div>
+
+        <!-- Paso 4 -->
+        <div id="paso-4" class="paso-promo oculto">
+          <h2>Paso 4 de 4: Envío</h2>
+          <label for="promo-cuando">¿Cuándo enviarlo?</label>
+          <select id="promo-cuando" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
+            <option value="ahora">Enviar ahora mismo</option>
+            <option value="manana">Mañana a las 10:00 hs</option>
+          </select>
+          <button id="btn-paso4-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
+          <button id="btn-crear-promo" type="button">🚀 Confirmar promo</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="config.js"></script>
   <script>
@@ -121,10 +183,13 @@
     const $ = (id) => document.getElementById(id);
     let negocioId = null;
 
-    const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar'];
+    const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar', 'promo'];
     function mostrar(nombre) {
       PANTALLAS.forEach((p) => $('pantalla-' + p).classList.toggle('oculto', p !== nombre));
       window.scrollTo(0, 0);
+    }
+    function mostrarPaso(num) {
+      [1, 2, 3, 4].forEach((n) => $('paso-' + n).classList.toggle('oculto', n !== num));
     }
 
     // ---------- Inicio ----------
@@ -292,6 +357,24 @@
     });
     $('btn-ir-clientes').addEventListener('click', cargarClientes);
     $('btn-volver').addEventListener('click', () => mostrar('inicio'));
+        // Navegación de Nueva Promo
+    $('btn-ir-promo').addEventListener('click', () => {
+      mostrarPaso(1);
+      mostrar('promo');
+    });
+    $('btn-cancelar-promo').addEventListener('click', () => mostrar('inicio'));
+    
+    // Botones del asistente
+    $('btn-paso1-sig').addEventListener('click', () => mostrarPaso(2));
+    $('btn-paso2-ant').addEventListener('click', () => mostrarPaso(1));
+    $('btn-paso2-sig').addEventListener('click', () => mostrarPaso(3));
+    $('btn-paso3-ant').addEventListener('click', () => mostrarPaso(2));
+    $('btn-paso3-sig').addEventListener('click', () => mostrarPaso(4));
+    $('btn-paso4-ant').addEventListener('click', () => mostrarPaso(3));
+    
+    $('btn-crear-promo').addEventListener('click', () => {
+      alert('¡Llegaste al final! Paso visual listo.');
+    });
 
     (async () => {
       const { data } = await db.auth.getSession();
