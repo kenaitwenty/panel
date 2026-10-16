@@ -5,18 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel Kenai</title>
   <style>
-    body { font-family: system-ui, sans-serif; display: flex; align-items: center;
-           justify-content: center; min-height: 100vh; margin: 0; background: #f4f6f8; }
-    .caja { background: white; padding: 2rem 3rem; border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.1); text-align: center; }
-    h1 { margin: 0 0 .5rem; }
-    p { color: #555; margin: 0; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #222; font-size: 18px; }
+    .centro { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .caja { background: white; padding: 2rem; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.1);
+            width: 100%; max-width: 420px; }
+    h1 { margin: 0 0 1.2rem; font-size: 1.5rem; }
+    label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
+    input { width: 100%; padding: .8rem; font-size: 1rem; border: 1px solid #bbb; border-radius: 8px; }
+    button { width: 100%; padding: 1rem; margin-top: 1.4rem; font-size: 1.1rem; font-weight: 600;
+             color: white; background: #1a7f4b; border: 0; border-radius: 10px; cursor: pointer; }
+    button:disabled { background: #999; cursor: default; }
+    button.gris { background: #e3e6ea; color: #222; margin-top: 0; }
+    .error { color: #b00020; margin-top: 1rem; min-height: 1.2rem; }
+    header { background: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between;
+             align-items: center; box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+    header strong { font-size: 1.15rem; }
+    header button { width: auto; padding: .5rem 1rem; margin: 0; font-size: 1rem; }
+    .menu { max-width: 520px; margin: 1.5rem auto; padding: 0 1rem; display: grid; gap: 1rem; }
+    .menu button { margin: 0; padding: 1.6rem; font-size: 1.3rem; }
+    .menu button:disabled { background: #cfd4d9; color: #666; }
+    .oculto { display: none; }
   </style>
 </head>
 <body>
-  <div class="caja">
-    <h1>Panel Kenai</h1>
-    <p>En construcción</p>
+
+  <div id="pantalla-login" class="centro oculto">
+    <form id="form-login" class="caja">
+      <h1>Panel Kenai</h1>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="clave">Contraseña</label>
+      <input id="clave" type="password" autocomplete="current-password" required>
+      <button id="btn-entrar" type="submit">Entrar</button>
+      <div id="error" class="error"></div>
+    </form>
   </div>
+
+  <div id="pantalla-inicio" class="oculto">
+    <header>
+      <strong id="nombre-negocio"></strong>
+      <button id="btn-salir" class="gris" type="button">Salir</button>
+    </header>
+    <div class="menu">
+      <button disabled>Nueva promo (próximamente)</button>
+      <button disabled>Mis clientes (próximamente)</button>
+      <button disabled>Mensajes enviados (próximamente)</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+  <script>
+    const SUPABASE_URL = 'https://xdhfinanimyxweywdkif.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_IEIg0I87HW1P8zh7gEIwNQ_2u-_Wrxr';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = (id) => document.getElementById(id);
+
+    function mostrar(pantalla) {
+      $('pantalla-login').classList.toggle('oculto', pantalla !== 'login');
+      $('pantalla-inicio').classList.toggle('oculto', pantalla !== 'inicio');
+    }
+
+    async function cargarInicio() {
+      const { data, error } = await db.from('negocios').select('nombre').limit(1).maybeSingle();
+      if (error || !data) {
+        $('nombre-negocio').textContent = 'Sin negocio asignado';
+      } else {
+        $('nombre-negocio').textContent = data.nombre;
+      }
+      mostrar('inicio');
+    }
+
+    $('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('error').textContent = '';
+      $('btn-entrar').disabled = true;
+      const { error } = await db.auth.signInWithPassword({
+        email: $('email').value.trim(),
+        password: $('clave').value,
+      });
+      $('btn-entrar').disabled = false;
+      if (error) {
+        $('error').textContent = 'Email o contraseña incorrectos.';
+        return;
+      }
+      $('clave').value = '';
+      await cargarInicio();
+    });
+
+    $('btn-salir').addEventListener('click', async () => {
+      await db.auth.signOut();
+      mostrar('login');
+    });
+
+    (async () => {
+      const { data } = await db.auth.getSession();
+      if (data.session) await cargarInicio();
+      else mostrar('login');
+    })();
+  </script>
 </body>
 </html>
