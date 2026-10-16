@@ -400,8 +400,95 @@
     $('p-detalle').addEventListener('input', actualizarPreview);
     $('p-vigencia').addEventListener('input', actualizarPreview);
     
-    $('btn-crear-promo').addEventListener('click', () => {
-      alert('¡Llegaste al final! Paso visual listo.');
+    // ---------- Guardar Campaña en Supabase ----------
+    $('btn-crear-promo').addEventListener('click', async () => {
+      const titulo = $('p-titulo').value.trim();
+      const detalle = $('p-detalle').value.trim();
+      const vigencia = $('p-vigencia').value.trim();
+
+      if (!titulo || !detalle) {
+        alert('Por favor completá al menos el título y el detalle de la promo.');
+        mostrarPaso(2);
+        return;
+      }
+
+      const btn = $('btn-crear-promo');
+      btn.disabled = true;
+      btn.textContent = 'Guardando promo...';
+
+      try {
+        // 1. Obtener o crear la plantilla base para este negocio
+        let { data: plantilla } = await db
+          .from('plantillas')
+          .select('id')
+          .eq('negocio_id', negocioId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!plantilla) {
+          const { data: nuevaPlantilla, error: errP } = await db
+            .from('plantillas')
+            .insert({
+              negocio_id: negocioId,
+              nombre_meta: 'promo_generica',
+              idioma: 'es_AR',
+              categoria: 'MARKETING',
+              variables: ['titulo', 'detalle', 'vigencia']
+            })
+            .select('id')
+            .single();
+
+          if (errP) throw errP;
+          plantilla = nuevaPlantilla;
+        }
+
+        // 2. Armar el disparador según lo elegido
+        const tipoEnvio = $('promo-cuando').value;
+        const ahora = new Date();
+        let disparador = {};
+
+        if (tipoEnvio === 'ahora') {
+          // Fecha de hoy YYYY-MM-DD y hora actual HH:MM
+          const fechaStr = ahora.toISOString().split('T')[0];
+          const horaStr = ahora.toTimeString().slice(0, 5);
+          disparador = { tipo: 'fecha', fecha: fechaStr, hora: horaStr };
+        } else {
+          // Mañana a las 10:00 hs
+          const manana = new Date(ahora);
+          manana.setDate(manana.getDate() + 1);
+          const fechaStr = manana.toISOString().split('T')[0];
+          disparador = { tipo: 'fecha', fecha: fechaStr, hora: '10:00' };
+        }
+
+        // 3. Guardar la campaña
+        const { error: errCampana } = await db.from('campanas').insert({
+          negocio_id: negocioId,
+          plantilla_id: plantilla.id,
+          nombre: titulo,
+          variables: { titulo, detalle, vigencia },
+          disparador: disparador,
+          audiencia: { tipo: $('promo-audiencia').value },
+          activa: true,
+          vigente_desde: ahora.toISOString().split('T')[0]
+        });
+
+        if (errCampana) throw errCampana;
+
+        alert('¡Promo creada con éxito!');
+        // Limpiamos los campos y volvemos al inicio
+        $('p-titulo').value = '';
+        $('p-detalle').value = '';
+        $('p-vigencia').value = '';
+        actualizarPreview();
+        mostrar('inicio');
+
+      } catch (err) {
+        console.error(err);
+        alert('Hubo un error al guardar la promo. Revisá la consola.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Confirmar promo';
+      }
     });
 
     (async () => {
