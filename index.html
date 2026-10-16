@@ -45,6 +45,14 @@
     .badge.baja { background: #eee; color: #666; }
     .vacio { color: #666; text-align: center; padding: 1rem 0; }
     .resumen { margin-bottom: 1rem; color: #444; }
+    
+    /* Vista previa WhatsApp */
+    .wa-preview { background: #e5ddd5; padding: 1rem; border-radius: 10px; margin-top: 1.2rem; }
+    .wa-burbuja { background: #d9fdd3; padding: .8rem 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.15);
+                  font-size: .95rem; line-height: 1.4; color: #111; max-width: 90%; }
+    .wa-burbuja strong { display: block; margin-bottom: .3rem; font-size: 1rem; }
+    .wa-burbuja .wa-vigencia { display: block; margin-top: .4rem; font-size: .85rem; color: #555; font-style: italic; }
+    
   </style>
 </head>
 <body>
@@ -144,6 +152,16 @@
           <input id="p-detalle" type="text" placeholder="Ej: Comprando 1kg te llevás 1/2kg gratis">
           <label for="p-vigencia">Vigencia</label>
           <input id="p-vigencia" type="text" placeholder="Ej: Solo por hoy hasta las 23hs">
+          
+          <!-- Vista previa en tiempo real -->
+          <div class="wa-preview">
+            <div class="wa-burbuja">
+              <strong id="prev-titulo">Título de tu promo</strong>
+              <span id="prev-detalle">Acá vas a ver cómo queda el detalle de la promo a medida que escribís.</span>
+              <span id="prev-vigencia" class="wa-vigencia">Vigencia</span>
+            </div>
+          </div>
+          
           <button id="btn-paso2-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
           <button id="btn-paso2-sig" type="button">Siguiente →</button>
         </div>
@@ -371,6 +389,16 @@
     $('btn-paso3-ant').addEventListener('click', () => mostrarPaso(2));
     $('btn-paso3-sig').addEventListener('click', () => mostrarPaso(4));
     $('btn-paso4-ant').addEventListener('click', () => mostrarPaso(3));
+
+        // Actualizar la vista previa tipo WhatsApp en vivo
+    function actualizarPreview() {
+      $('prev-titulo').textContent = $('p-titulo').value.trim() || 'Título de tu promo';
+      $('prev-detalle').textContent = $('p-detalle').value.trim() || 'Acá vas a ver cómo queda el detalle de la promo a medida que escribís.';
+      $('prev-vigencia').textContent = $('p-vigencia').value.trim() || 'Vigencia';
+    }
+    $('p-titulo').addEventListener('input', actualizarPreview);
+    $('p-detalle').addEventListener('input', actualizarPreview);
+    $('p-vigencia').addEventListener('input', actualizarPreview);
     
     $('btn-crear-promo').addEventListener('click', () => {
       alert('¡Llegaste al final! Paso visual listo.');
