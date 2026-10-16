@@ -78,13 +78,26 @@
     </header>
     <div class="contenido">
       <div class="menu">
-        <button id="btn-ir-promo" type="button">Nueva promo</button>
+        <button id="btn-ir-promos" type="button">Mis promos</button>
         <button id="btn-ir-clientes" type="button">Mis clientes</button>
         <button disabled>Mensajes enviados (próximamente)</button>
       </div>
     </div>
   </div>
 
+<!-- MIS PROMOS -->
+  <div id="pantalla-lista-promos" class="oculto">
+    <header>
+      <strong>Mis promos</strong>
+      <button id="btn-volver-promos" class="gris" type="button">← Volver</button>
+    </header>
+    <div class="contenido">
+      <div id="resumen-promos" class="resumen"></div>
+      <div class="tarjeta" id="contenedor-promos"></div>
+      <button id="btn-nueva-promo-flotante" type="button">+ Crear nueva promo</button>
+    </div>
+  </div>
+  
   <!-- MIS CLIENTES -->
   <div id="pantalla-clientes" class="oculto">
     <header>
@@ -201,7 +214,7 @@
     const $ = (id) => document.getElementById(id);
     let negocioId = null;
 
-    const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar', 'promo'];
+    const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar', 'promo', 'lista-promos'];
     function mostrar(nombre) {
       PANTALLAS.forEach((p) => $('pantalla-' + p).classList.toggle('oculto', p !== nombre));
       window.scrollTo(0, 0);
@@ -304,6 +317,70 @@
       await cargarClientes();
     }
 
+// ---------- Mis promos ----------
+    async function cargarPromos() {
+      mostrar('lista-promos');
+      const contenedor = $('contenedor-promos');
+      contenedor.innerHTML = '';
+      $('resumen-promos').textContent = 'Cargando promos...';
+
+      const { data: campanas, error } = await db
+        .from('campanas')
+        .select('id,nombre,activa,creado_en')
+        .order('creado_en', { ascending: false });
+
+      if (error) {
+        $('resumen-promos').textContent = 'Error al cargar promos.';
+        return;
+      }
+
+      $('resumen-promos').textContent = campanas.length + ' promos registradas.';
+
+      if (campanas.length === 0) {
+        const v = document.createElement('div');
+        v.className = 'vacio';
+        v.textContent = 'Todavía no creaste ninguna promo.';
+        contenedor.appendChild(v);
+        return;
+      }
+
+      for (const camp of campanas) {
+        const fila = document.createElement('div');
+        fila.className = 'fila';
+
+        const izq = document.createElement('div');
+        const n = document.createElement('div');
+        n.className = 'nombre';
+        n.textContent = camp.nombre || 'Sin título';
+
+        const est = document.createElement('div');
+        est.className = 'tel';
+        const b = document.createElement('span');
+        b.className = 'badge ' + (camp.activa ? 'activo' : 'baja');
+        b.textContent = camp.activa ? 'Activa' : 'Pausada';
+        est.appendChild(b);
+
+        izq.appendChild(n);
+        izq.appendChild(est);
+        fila.appendChild(izq);
+
+        const btnPausar = document.createElement('button');
+        btnPausar.className = camp.activa ? 'rojo' : 'gris';
+        btnPausar.style.width = 'auto';
+        btnPausar.style.padding = '.45rem .9rem';
+        btnPausar.style.fontSize = '.95rem';
+        btnPausar.type = 'button';
+        btnPausar.textContent = camp.activa ? 'Pausar' : 'Activar';
+        btnPausar.addEventListener('click', async () => {
+          await db.from('campanas').update({ activa: !camp.activa }).eq('id', camp.id);
+          await cargarPromos();
+        });
+
+        fila.appendChild(btnPausar);
+        contenedor.appendChild(fila);
+      }
+    }
+    
     // ---------- Agregar cliente ----------
     $('btn-agregar').addEventListener('click', () => {
       $('form-agregar').reset();
@@ -376,11 +453,13 @@
     $('btn-ir-clientes').addEventListener('click', cargarClientes);
     $('btn-volver').addEventListener('click', () => mostrar('inicio'));
         // Navegación de Nueva Promo
-    $('btn-ir-promo').addEventListener('click', () => {
+    $('btn-ir-promos').addEventListener('click', cargarPromos);
+    $('btn-volver-promos').addEventListener('click', () => mostrar('inicio'));
+    $('btn-nueva-promo-flotante').addEventListener('click', () => {
       mostrarPaso(1);
       mostrar('promo');
     });
-    $('btn-cancelar-promo').addEventListener('click', () => mostrar('inicio'));
+    $('btn-cancelar-promo').addEventListener('click', () => mostrar('lista-promos'));
     
     // Botones del asistente
     $('btn-paso1-sig').addEventListener('click', () => mostrarPaso(2));
@@ -480,7 +559,7 @@
         $('p-detalle').value = '';
         $('p-vigencia').value = '';
         actualizarPreview();
-        mostrar('inicio');
+        await cargarPromos();
 
       } catch (err) {
         console.error(err);
