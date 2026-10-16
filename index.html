@@ -376,7 +376,33 @@
           await cargarPromos();
         });
 
-        fila.appendChild(btnPausar);
+        // Contenedor para agrupar los botones a la derecha
+        const acciones = document.createElement('div');
+        acciones.style.display = 'flex';
+        acciones.style.gap = '.5rem';
+
+        // Botón Eliminar
+        const btnBorrar = document.createElement('button');
+        btnBorrar.className = 'rojo';
+        btnBorrar.style.width = 'auto';
+        btnBorrar.style.padding = '.45rem .8rem';
+        btnBorrar.style.fontSize = '.9rem';
+        btnBorrar.type = 'button';
+        btnBorrar.textContent = '🗑️';
+        btnBorrar.title = 'Eliminar promo';
+        btnBorrar.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar definitivamente la promo "' + (camp.nombre || 'esta promo') + '"?')) return;
+          const { error: errBorrar } = await db.from('campanas').delete().eq('id', camp.id);
+          if (errBorrar) {
+            alert('No se pudo eliminar la promo. Probá de nuevo.');
+            return;
+          }
+          await cargarPromos();
+        });
+
+        acciones.appendChild(btnPausar);
+        acciones.appendChild(btnBorrar);
+        fila.appendChild(acciones);
         contenedor.appendChild(fila);
       }
     }
