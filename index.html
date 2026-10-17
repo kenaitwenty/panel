@@ -197,7 +197,19 @@
           <label for="promo-audiencia">¿A quiénes les llega?</label>
           <select id="promo-audiencia" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
             <option value="todos">A todos mis clientes activos</option>
-            <option value="inactivos">A los que no vienen hace 30 días</option>
+            
+            <optgroup label="Cumpleaños">
+              <option value="cumple-0">El mismo día del cumpleaños</option>
+              <option value="cumple-3">3 días antes del cumpleaños</option>
+              <option value="cumple-7">1 semana antes (7 días)</option>
+              <option value="cumple-14">2 semanas antes (14 días)</option>
+            </optgroup>
+
+            <optgroup label="Reactivar clientes dormidos">
+              <option value="inactivos-30">No vienen hace 30 días (1 mes)</option>
+              <option value="inactivos-60">No vienen hace 60 días (2 meses)</option>
+              <option value="inactivos-180">No vienen hace 6 meses (180 días)</option>
+            </optgroup>
           </select>
           <button id="btn-paso3-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
           <button id="btn-paso3-sig" type="button">Siguiente →</button>
@@ -667,7 +679,21 @@
           nombre: titulo,
           variables: { titulo, detalle, vigencia },
           disparador: disparador,
-          audiencia: { tipo: $('promo-audiencia').value },
+          audiencia: (() => {
+            const val = $('promo-audiencia').value;
+            // Caso inactivos: guarda {"tipo": "inactividad", "dias": 30}
+            if (val.startsWith('inactivos-')) {
+              const dias = parseInt(val.split('-')[1], 10);
+              return { tipo: 'inactividad', dias: dias };
+            }
+            // Caso cumpleaños con anticipación: guarda {"tipo": "cumpleanos", "anticipacion_dias": 3}
+            if (val.startsWith('cumple-')) {
+              const dias = parseInt(val.split('-')[1], 10);
+              return { tipo: 'cumpleanos', anticipacion_dias: dias };
+            }
+            // Caso general: {"tipo": "todos"}
+            return { tipo: val };
+          })(),
           activa: true,
           vigente_desde: ahora.toISOString().split('T')[0]
         });
