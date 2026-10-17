@@ -224,6 +224,9 @@
             <option value="manana">Mañana a las 10:00 hs</option>
           </select>
           <button id="btn-paso4-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
+          <div id="promo-estimacion" style="margin-top: 1.2rem; padding: .8rem; background: #eef2f6; border-radius: 8px; font-size: .95rem; color: #333; text-align: center;">
+            Calculando destinatarios...
+          </div>
           <button id="btn-crear-promo" type="button">🚀 Confirmar promo</button>
         </div>
 
@@ -591,7 +594,71 @@
     $('btn-paso2-ant').addEventListener('click', () => mostrarPaso(1));
     $('btn-paso2-sig').addEventListener('click', () => mostrarPaso(3));
     $('btn-paso3-ant').addEventListener('click', () => mostrarPaso(2));
-    $('btn-paso3-sig').addEventListener('click', () => mostrarPaso(4));
+    $('btn-paso3-sig').addEventListener('click', async () => {
+      mostrarPaso(4);
+      const est = $('promo-estimacion');
+      est.textContent = 'Calculando destinatarios...';
+
+      try {
+        const [c, k] = await Promise.all([
+          db.from('clientes').select('id, fecha_nacimiento, ultima_interaccion'),
+          db.from('consentimientos').select('cliente_id, tipo, creado_en').order('creado_en', { ascending: false }),
+        ]);
+
+        if (c.error || k.error) {
+          est.textContent = 'No se pudo estimar la cantidad.';
+          return;
+        }
+
+        // 1. Filtrar solo los clientes cuyo último consentimiento fue 'alta'
+        const ultimo = {};
+        for (const fila of k.data) {
+          if (!(fila.cliente_id in ultimo)) ultimo[fila.cliente_id] = fila.tipo;
+        }
+        const activos = c.data.filter((cli) => ultimo[cli.id] === 'alta');
+
+        // 2. Aplicar el filtro según la audiencia elegida en el Paso 3
+        const aud = $('promo-audiencia').value;
+        let cantidad = 0;
+
+        if (aud === 'todos') {
+          cantidad = activos.length;
+        } else if (aud.startsWith('cumple-')) {
+          const anticipacion = parseInt(aud.split('-')[1], 10);
+          const hoy = new Date();
+          // Calculamos la fecha objetivo (hoy + anticipación)
+          const target = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + anticipacion);
+          const targetMes = target.getMonth() + 1;
+          const targetDia = target.getDate();
+
+          cantidad = activos.filter((cli) => {
+            if (!cli.fecha_nacimiento) return false;
+            // Formato YYYY-MM-DD
+            const partes = cli.fecha_nacimiento.split('-');
+            const mesCli = parseInt(partes[1], 10);
+            const diaCli = parseInt(partes[2], 10);
+            return mesCli === targetMes && diaCli === targetDia;
+          }).length;
+
+        } else if (aud.startsWith('inactivos-')) {
+          const diasInactividad = parseInt(aud.split('-')[1], 10);
+          const hoy = new Date();
+
+          cantidad = activos.filter((cli) => {
+            // Si nunca interactuó, o pasaron más de N días
+            if (!cli.ultima_interaccion) return true;
+            const fechaUltima = new Date(cli.ultima_interaccion);
+            const diffDias = (hoy - fechaUltima) / (1000 * 60 * 60 * 24);
+            return diffDias >= diasInactividad;
+          }).length;
+        }
+
+        est.innerHTML = `Destinatarios estimados: <strong>${cantidad} ${cantidad === 1 ? 'cliente' : 'clientes'}</strong>`;
+      } catch (err) {
+        console.error(err);
+        est.textContent = 'Destinatarios estimados: No disponible';
+      }
+    });
     $('btn-paso4-ant').addEventListener('click', () => mostrarPaso(3));
 
         // Actualizar la vista previa tipo WhatsApp en vivo
