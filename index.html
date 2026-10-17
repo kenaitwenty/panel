@@ -80,11 +80,23 @@
       <div class="menu">
         <button id="btn-ir-promos" type="button">Mis promos</button>
         <button id="btn-ir-clientes" type="button">Mis clientes</button>
-        <button disabled>Mensajes enviados (próximamente)</button>
+        <button id="btn-ir-envios" type="button">Mensajes enviados</button>
       </div>
     </div>
   </div>
 
+<!-- MENSAJES ENVIADOS -->
+  <div id="pantalla-envios" class="oculto">
+    <header>
+      <strong>Mensajes enviados</strong>
+      <button id="btn-volver-envios" class="gris" type="button">← Volver</button>
+    </header>
+    <div class="contenido">
+      <div id="resumen-envios" class="resumen"></div>
+      <div class="tarjeta" id="contenedor-envios"></div>
+    </div>
+  </div>
+  
 <!-- MIS PROMOS -->
   <div id="pantalla-lista-promos" class="oculto">
     <header>
@@ -214,7 +226,7 @@
     const $ = (id) => document.getElementById(id);
     let negocioId = null;
 
-    const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar', 'promo', 'lista-promos'];
+    const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar', 'promo', 'lista-promos', 'envios'];
     function mostrar(nombre) {
       PANTALLAS.forEach((p) => $('pantalla-' + p).classList.toggle('oculto', p !== nombre));
       window.scrollTo(0, 0);
@@ -317,6 +329,78 @@
       await cargarClientes();
     }
 
+// ---------- Mensajes enviados ----------
+    async function cargarEnvios() {
+      mostrar('envios');
+      const contenedor = $('contenedor-envios');
+      contenedor.innerHTML = '';
+      $('resumen-envios').textContent = 'Cargando mensajes...';
+
+      // Traemos los envíos de este negocio ordenados por los más recientes
+      const { data: listaEnvios, error } = await db
+        .from('envios')
+        .select('id, programado_para, estado, texto, clientes(nombre, telefono)')
+        .order('programado_para', { ascending: false });
+
+      if (error) {
+        $('resumen-envios').textContent = 'Error al cargar mensajes enviados.';
+        return;
+      }
+
+      $('resumen-envios').textContent = listaEnvios.length + ' mensajes registrados.';
+
+      if (listaEnvios.length === 0) {
+        const v = document.createElement('div');
+        v.className = 'vacio';
+        v.textContent = 'Todavía no hay mensajes registrados.';
+        contenedor.appendChild(v);
+        return;
+      }
+
+      for (const env of listaEnvios) {
+        const fila = document.createElement('div');
+        fila.className = 'fila';
+        fila.style.flexDirection = 'column';
+        fila.style.alignItems = 'flex-start';
+
+        const cabecera = document.createElement('div');
+        cabecera.style.width = '100%';
+        cabecera.style.display = 'flex';
+        cabecera.style.justifyContent = 'space-between';
+        cabecera.style.alignItems = 'center';
+
+        const cliNombre = (env.clientes && env.clientes.nombre) || 'Sin nombre';
+        const cliTel = (env.clientes && env.clientes.telefono) || '';
+
+        const izq = document.createElement('div');
+        izq.innerHTML = `<strong>${cliNombre}</strong> <span style="color:#666; font-size:.9rem;">(${cliTel})</span>`;
+
+        const b = document.createElement('span');
+        b.className = 'badge ' + (env.estado === 'enviado' ? 'activo' : 'baja');
+        b.textContent = env.estado;
+
+        cabecera.appendChild(izq);
+        cabecera.appendChild(b);
+        fila.appendChild(cabecera);
+
+        // Burbujita con el texto que se le envió
+        if (env.texto) {
+          const burbuja = document.createElement('div');
+          burbuja.style.background = '#eef9f2';
+          burbuja.style.padding = '.6rem .8rem';
+          burbuja.style.borderRadius = '8px';
+          burbuja.style.marginTop = '.6rem';
+          burbuja.style.fontSize = '.9rem';
+          burbuja.style.width = '100%';
+          burbuja.style.whiteSpace = 'pre-wrap';
+          burbuja.textContent = env.texto;
+          fila.appendChild(burbuja);
+        }
+
+        contenedor.appendChild(fila);
+      }
+    }
+    
 // ---------- Mis promos ----------
     async function cargarPromos() {
       mostrar('lista-promos');
@@ -486,6 +570,9 @@
       mostrar('promo');
     });
     $('btn-cancelar-promo').addEventListener('click', () => mostrar('lista-promos'));
+    // Botones de Mensajes enviados
+    $('btn-ir-envios').addEventListener('click', cargarEnvios);
+    $('btn-volver-envios').addEventListener('click', () => mostrar('inicio'));
     
     // Botones del asistente
     $('btn-paso1-sig').addEventListener('click', () => mostrarPaso(2));
