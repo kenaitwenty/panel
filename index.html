@@ -553,15 +553,23 @@
         let disparador = {};
 
         if (tipoEnvio === 'ahora') {
-          // Fecha de hoy YYYY-MM-DD y hora actual HH:MM
-          const fechaStr = ahora.toISOString().split('T')[0];
+          // Fecha local en formato YYYY-MM-DD
+          const anio = ahora.getFullYear();
+          const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+          const dia = String(ahora.getDate()).padStart(2, '0');
+          const fechaStr = `${anio}-${mes}-${dia}`;
+
+          // Hora local HH:MM
           const horaStr = ahora.toTimeString().slice(0, 5);
           disparador = { tipo: 'fecha', fecha: fechaStr, hora: horaStr };
         } else {
-          // Mañana a las 10:00 hs
+          // Mañana local
           const manana = new Date(ahora);
           manana.setDate(manana.getDate() + 1);
-          const fechaStr = manana.toISOString().split('T')[0];
+          const anio = manana.getFullYear();
+          const mes = String(manana.getMonth() + 1).padStart(2, '0');
+          const dia = String(manana.getDate()).padStart(2, '0');
+          const fechaStr = `${anio}-${mes}-${dia}`;
           disparador = { tipo: 'fecha', fecha: fechaStr, hora: '10:00' };
         }
 
