@@ -6,84 +6,139 @@
   <title>Panel Kenai</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #222; font-size: 18px; }
-    .oculto { display: none !important; }
-    .centro { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    .caja { background: white; padding: 2rem; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.1);
-            width: 100%; max-width: 420px; }
-    h1 { margin: 0 0 1.2rem; font-size: 1.5rem; }
-    h2 { margin: 0 0 1rem; font-size: 1.3rem; }
-    label { display: block; margin: 1rem 0 .3rem; font-weight: 600; }
-    input[type=text], input[type=email], input[type=password], input[type=tel], input[type=date] {
-      width: 100%; padding: .8rem; font-size: 1rem; border: 1px solid #bbb; border-radius: 8px; }
-    .check { display: flex; gap: .7rem; align-items: flex-start; margin-top: 1.2rem; font-weight: 400; }
-    .check input { width: 1.4rem; height: 1.4rem; margin-top: .15rem; flex-shrink: 0; }
-    button { width: 100%; padding: 1rem; margin-top: 1.4rem; font-size: 1.1rem; font-weight: 600;
-             color: white; background: #1a7f4b; border: 0; border-radius: 10px; cursor: pointer; }
-    button:disabled { background: #999; cursor: default; }
-    button.gris { background: #e3e6ea; color: #222; margin-top: 0; }
-    button.rojo { background: #fff; color: #b00020; border: 1px solid #b00020; margin: 0;
-                  width: auto; padding: .45rem .9rem; font-size: .95rem; }
-    .error { color: #b00020; margin-top: 1rem; min-height: 1.2rem; }
-    header { background: white; padding: 1rem 1.2rem; display: flex; justify-content: space-between;
-             align-items: center; box-shadow: 0 1px 6px rgba(0,0,0,.08); }
-    header strong { font-size: 1.15rem; }
-    header button { width: auto; padding: .5rem 1rem; margin: 0; font-size: 1rem; }
-    .contenido { max-width: 560px; margin: 1.5rem auto; padding: 0 1rem; }
-    .tarjeta { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 1px 6px rgba(0,0,0,.08);
-               margin-bottom: 1rem; }
-    .fila { display: flex; justify-content: space-between; align-items: center; gap: .8rem;
-            padding: .9rem 0; border-bottom: 1px solid #eee; }
-    .fila:last-child { border-bottom: 0; }
-    .fila .nombre { font-weight: 600; }
-    .fila .tel { color: #666; font-size: .95rem; }
-    .badge { display: inline-block; padding: .15rem .6rem; border-radius: 99px; font-size: .85rem; font-weight: 600; }
-    .badge.activo { background: #d9f2e3; color: #11613a; }
-    .badge.baja { background: #eee; color: #666; }
-    .vacio { color: #666; text-align: center; padding: 1rem 0; }
-    .resumen { margin-bottom: 1rem; color: #444; }
     
-    /* Vista previa WhatsApp */
-    .wa-preview { background: #e5ddd5; padding: 1rem; border-radius: 10px; margin-top: 1.2rem; }
-    .wa-burbuja { background: #d9fdd3; padding: .8rem 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.15);
-                  font-size: .95rem; line-height: 1.4; color: #111; max-width: 90%; }
-    .wa-burbuja strong { display: block; margin-bottom: .3rem; font-size: 1rem; }
-    .wa-burbuja .wa-vigencia { display: block; margin-top: .4rem; font-size: .85rem; color: #555; font-style: italic; }
-
-    /* ESTILOS DE LA PANTALLA DE INICIO CON FONDO */
-    #pantalla-inicio {
+    /* Fondo global unificado */
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
       min-height: 100vh;
       background: #0b1317 url('fondo.jpg') no-repeat center center fixed;
       background-size: cover;
-      display: flex;
-      flex-direction: column;
+      color: #e2e8f0;
+      font-size: 18px;
     }
-    #pantalla-inicio header {
-      background: transparent;
-      box-shadow: none;
-      padding: 1.5rem 2rem;
+
+    .oculto { display: none !important; }
+    .centro { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    
+    /* Headers integrados translúcidos */
+    header {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem 1.4rem;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    #pantalla-inicio header button#btn-salir {
-      background: rgba(255, 255, 255, 0.12);
+    header strong { font-size: 1.15rem; color: #ffffff; }
+
+    .contenido { max-width: 560px; margin: 1.5rem auto; padding: 0 1rem; }
+    h1 { margin: 0 0 1.2rem; font-size: 1.6rem; color: #ffffff; }
+    h2 { margin: 0 0 1rem; font-size: 1.3rem; color: #ffffff; }
+    label { display: block; margin: 1rem 0 .3rem; font-weight: 600; color: #cbd5e1; font-size: .95rem; }
+
+    /* Inputs y Selects oscuros */
+    input[type=text], input[type=email], input[type=password], input[type=tel], input[type=date], select {
+      width: 100%;
+      padding: .85rem;
+      font-size: 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus {
+      border-color: #25d366;
+    }
+    select option {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .check { display: flex; gap: .7rem; align-items: flex-start; margin-top: 1.2rem; font-weight: 400; color: #cbd5e1; }
+    .check input { width: 1.4rem; height: 1.4rem; margin-top: .15rem; flex-shrink: 0; }
+
+    /* Botones primarios y secundarios */
+    button {
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1.4rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #1b874f, #126338);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+    button:active { transform: scale(0.98); }
+    button:disabled { background: #475569; cursor: default; border-color: transparent; }
+    button.gris {
+      background: rgba(255, 255, 255, 0.1);
       color: #e2e8f0;
       border: 1px solid rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(8px);
-      border-radius: 8px;
+      margin-top: 0;
+      width: auto;
+      padding: .5rem 1rem;
+      font-size: .95rem;
     }
-    #pantalla-inicio .contenido {
-      flex: 1;
+    button.gris:hover { background: rgba(255, 255, 255, 0.18); }
+    button.rojo {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      margin: 0;
+      width: auto;
+      padding: .45rem .9rem;
+      font-size: .95rem;
+    }
+
+    .error { color: #f87171; margin-top: 1rem; min-height: 1.2rem; }
+
+    /* Tarjetas estilo Glassmorphism */
+    .caja, .tarjeta {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+      margin-bottom: 1rem;
+    }
+
+    .fila {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 1rem;
+      gap: .8rem;
+      padding: .9rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
+    .fila:last-child { border-bottom: 0; }
+    .fila .nombre { font-weight: 600; color: #ffffff; }
+    .fila .tel { color: #94a3b8; font-size: .95rem; }
+
+    .badge { display: inline-block; padding: .2rem .6rem; border-radius: 99px; font-size: .8rem; font-weight: 600; }
+    .badge.activo { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge.baja { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .vacio { color: #94a3b8; text-align: center; padding: 1.5rem 0; }
+    .resumen { margin-bottom: 1rem; color: #6ee7b7; font-weight: 500; font-size: .95rem; }
+
+    /* Menú Inicio */
+    #pantalla-inicio header { background: transparent; border-bottom: none; }
     .tarjeta-menu {
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.7);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(37, 211, 102, 0.25);
@@ -93,11 +148,7 @@
       width: 100%;
       text-align: center;
     }
-    .tarjeta-menu h1 {
-      color: #ffffff;
-      font-size: 2rem;
-      margin: 0 0 0.3rem 0;
-    }
+    .tarjeta-menu h1 { font-size: 2rem; margin: 0 0 0.3rem 0; }
     .tarjeta-menu p.subtitulo {
       color: #6ee7b7;
       font-size: 0.95rem;
@@ -106,30 +157,38 @@
       letter-spacing: 1.5px;
       font-weight: 600;
     }
-    .menu {
-      display: flex;
-      flex-direction: column;
-      gap: 1.4rem;
-    }
+    .menu { display: flex; flex-direction: column; gap: 1.3rem; }
     .menu button {
       margin: 0;
       padding: 1.2rem 1.4rem;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #ffffff;
-      background: linear-gradient(135deg, #1b874f, #126338);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .8rem;
     }
+
+    /* Vista previa WhatsApp */
+    .wa-preview { background: #0b141a; padding: 1rem; border-radius: 12px; margin-top: 1.2rem; border: 1px solid rgba(255,255,255,0.08); }
+    .wa-burbuja {
+      background: #005c4b;
+      padding: .8rem 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+      font-size: .95rem;
+      line-height: 1.4;
+      color: #e9edef;
+      max-width: 90%;
+    }
+    .wa-burbuja strong { display: block; margin-bottom: .3rem; font-size: 1rem; color: #ffffff; }
+    .wa-burbuja .wa-vigencia { display: block; margin-top: .4rem; font-size: .85rem; color: #8696a0; font-style: italic; }
   </style>
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="pantalla-login" class="centro oculto">
-    <form id="form-login" class="caja">
+    <form id="form-login" class="caja" style="max-width: 420px; width: 100%;">
       <h1>Panel Kenai</h1>
       <label for="email">Email</label>
       <input id="email" type="email" autocomplete="username" required>
@@ -143,6 +202,7 @@
   <!-- INICIO -->
   <div id="pantalla-inicio" class="oculto">
     <header>
+      <div></div>
       <button id="btn-salir" class="gris" type="button">Cerrar sesión</button>
     </header>
     <div class="contenido">
@@ -233,7 +293,7 @@
         <div id="paso-1" class="paso-promo">
           <h2>Paso 1 de 4: ¿Qué querés comunicar?</h2>
           <label for="promo-tipo">Tipo de mensaje</label>
-          <select id="promo-tipo" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
+          <select id="promo-tipo">
             <option value="promo">Promo / Descuento</option>
             <option value="cumple">Regalo de Cumpleaños</option>
             <option value="evento">Evento o Novedad</option>
@@ -251,7 +311,7 @@
           <label for="p-vigencia">Vigencia</label>
           <input id="p-vigencia" type="text" placeholder="Ej: Solo por hoy hasta las 23hs">
           
-          <!-- Vista previa en tiempo real -->
+          <!-- Vista previa en tiempo real WhatsApp Web Dark -->
           <div class="wa-preview">
             <div class="wa-burbuja">
               <strong id="prev-titulo">Título de tu promo</strong>
@@ -268,16 +328,14 @@
         <div id="paso-3" class="paso-promo oculto">
           <h2>Paso 3 de 4: Destinatarios</h2>
           <label for="promo-audiencia">¿A quiénes les llega?</label>
-          <select id="promo-audiencia" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
+          <select id="promo-audiencia">
             <option value="todos">A todos mis clientes activos</option>
-            
             <optgroup label="Cumpleaños">
               <option value="cumple-0">El mismo día del cumpleaños</option>
               <option value="cumple-3">3 días antes del cumpleaños</option>
               <option value="cumple-7">1 semana antes (7 días)</option>
               <option value="cumple-14">2 semanas antes (14 días)</option>
             </optgroup>
-
             <optgroup label="Reactivar clientes dormidos">
               <option value="inactivos-30">No vienen hace 30 días (1 mes)</option>
               <option value="inactivos-60">No vienen hace 60 días (2 meses)</option>
@@ -292,12 +350,12 @@
         <div id="paso-4" class="paso-promo oculto">
           <h2>Paso 4 de 4: Envío</h2>
           <label for="promo-cuando">¿Cuándo enviarlo?</label>
-          <select id="promo-cuando" style="width: 100%; padding: .8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb;">
+          <select id="promo-cuando">
             <option value="ahora">Enviar ahora mismo</option>
             <option value="manana">Mañana a las 10:00 hs</option>
           </select>
           <button id="btn-paso4-ant" class="gris" type="button" style="margin-top: 1rem;">← Volver</button>
-          <div id="promo-estimacion" style="margin-top: 1.2rem; padding: .8rem; background: #eef2f6; border-radius: 8px; font-size: .95rem; color: #333; text-align: center;">
+          <div id="promo-estimacion" style="margin-top: 1.2rem; padding: .9rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-size: .95rem; color: #cbd5e1; text-align: center;">
             Calculando destinatarios...
           </div>
           <button id="btn-crear-promo" type="button">🚀 Confirmar promo</button>
@@ -329,7 +387,6 @@
       negocioId = data ? data.id : null;
       
       if (data && data.nombre) {
-        // Remueve 'test ' si existe para que quede solo 'Heladería'
         $('nombre-negocio').textContent = data.nombre.replace(/^test\s+/i, '');
       } else {
         $('nombre-negocio').textContent = 'Heladería';
@@ -467,7 +524,7 @@
         const cliTel = (env.clientes && env.clientes.telefono) || '';
 
         const izq = document.createElement('div');
-        izq.innerHTML = `<strong>${cliNombre}</strong> <span style="color:#666; font-size:.9rem;">(${cliTel})</span>`;
+        izq.innerHTML = `<strong>${cliNombre}</strong> <span style="color:#94a3b8; font-size:.9rem;">(${cliTel})</span>`;
 
         const b = document.createElement('span');
         b.className = 'badge ' + (env.estado === 'enviado' ? 'activo' : 'baja');
@@ -479,8 +536,10 @@
 
         if (env.texto) {
           const burbuja = document.createElement('div');
-          burbuja.style.background = '#eef9f2';
-          burbuja.style.padding = '.6rem .8rem';
+          burbuja.style.background = 'rgba(0, 92, 75, 0.35)';
+          burbuja.style.border = '1px solid rgba(37, 211, 102, 0.2)';
+          burbuja.style.color = '#e9edef';
+          burbuja.style.padding = '.7rem .9rem';
           burbuja.style.borderRadius = '8px';
           burbuja.style.marginTop = '.6rem';
           burbuja.style.fontSize = '.9rem';
