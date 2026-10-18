@@ -373,13 +373,19 @@
     let negocioId = null;
 
     const PANTALLAS = ['login', 'inicio', 'clientes', 'agregar', 'promo', 'lista-promos', 'envios'];
-    function mostrar(nombre) {
+
+    function mostrar(nombre, guardarEnHistorial = true) {
       PANTALLAS.forEach((p) => $('pantalla-' + p).classList.toggle('oculto', p !== nombre));
       window.scrollTo(0, 0);
+    
+      // Guarda la pantalla en el historial del celular
+      if (guardarEnHistorial) {
+        history.pushState({ pantalla: nombre }, '', '#' + nombre);
+      }
     }
-    function mostrarPaso(num) {
-      [1, 2, 3, 4].forEach((n) => $('paso-' + n).classList.toggle('oculto', n !== num));
-    }
+      function mostrarPaso(num) {
+         [1, 2, 3, 4].forEach((n) => $('paso-' + n).classList.toggle('oculto', n !== num));
+      }
 
     // ---------- Inicio ----------
     async function cargarInicio() {
@@ -392,7 +398,9 @@
         $('nombre-negocio').textContent = 'Heladería';
       }
       
-      mostrar('inicio');
+      // Reemplaza el estado inicial para que 'inicio' sea la raíz
+      history.replaceState({ pantalla: 'inicio' }, '', '#inicio');
+      mostrar('inicio', false);
     }
 
     // ---------- Teléfono ----------
@@ -892,6 +900,19 @@
       }
     });
 
+          // Maneja el botón 'Atrás' nativo del teléfono
+      window.addEventListener('popstate', (e) => {
+        if (e.state && e.state.pantalla) {
+          // Vuelve a la pantalla previa sin volver a meterla en el historial
+          mostrar(e.state.pantalla, false);
+        } else {
+          // Si no hay historial previo pero está dentro del panel, lo manda a inicio
+          if (negocioId) {
+            mostrar('inicio', false);
+          }
+        }
+      });
+    
     (async () => {
       const { data } = await db.auth.getSession();
       if (data.session) await cargarInicio();
