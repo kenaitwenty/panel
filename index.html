@@ -30,9 +30,6 @@
     header strong { font-size: 1.15rem; }
     header button { width: auto; padding: .5rem 1rem; margin: 0; font-size: 1rem; }
     .contenido { max-width: 560px; margin: 1.5rem auto; padding: 0 1rem; }
-    .menu { display: grid; gap: 1rem; }
-    .menu button { margin: 0; padding: 1.6rem; font-size: 1.3rem; }
-    .menu button:disabled { background: #cfd4d9; color: #666; }
     .tarjeta { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 1px 6px rgba(0,0,0,.08);
                margin-bottom: 1rem; }
     .fila { display: flex; justify-content: space-between; align-items: center; gap: .8rem;
@@ -52,7 +49,80 @@
                   font-size: .95rem; line-height: 1.4; color: #111; max-width: 90%; }
     .wa-burbuja strong { display: block; margin-bottom: .3rem; font-size: 1rem; }
     .wa-burbuja .wa-vigencia { display: block; margin-top: .4rem; font-size: .85rem; color: #555; font-style: italic; }
-    
+
+    /* ESTILOS DE LA PANTALLA DE INICIO CON FONDO */
+    #pantalla-inicio {
+      min-height: 100vh;
+      background: #0b1317 url('fondo.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+    }
+    #pantalla-inicio header {
+      background: transparent;
+      box-shadow: none;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+    #pantalla-inicio header button#btn-salir {
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border-radius: 8px;
+    }
+    #pantalla-inicio .contenido {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .tarjeta-menu {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(37, 211, 102, 0.25);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      padding: 2.2rem 1.8rem;
+      width: 100%;
+      text-align: center;
+    }
+    .tarjeta-menu h1 {
+      color: #ffffff;
+      font-size: 2rem;
+      margin: 0 0 0.3rem 0;
+    }
+    .tarjeta-menu p.subtitulo {
+      color: #6ee7b7;
+      font-size: 0.95rem;
+      margin: 0 0 2rem 0;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+    .menu button {
+      margin: 0;
+      padding: 1.2rem 1.4rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(135deg, #1b874f, #126338);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -73,19 +143,22 @@
   <!-- INICIO -->
   <div id="pantalla-inicio" class="oculto">
     <header>
-      <strong id="nombre-negocio"></strong>
-      <button id="btn-salir" class="gris" type="button">Salir</button>
+      <button id="btn-salir" class="gris" type="button">Cerrar sesión</button>
     </header>
     <div class="contenido">
-      <div class="menu">
-        <button id="btn-ir-promos" type="button">Mis promos</button>
-        <button id="btn-ir-clientes" type="button">Mis clientes</button>
-        <button id="btn-ir-envios" type="button">Mensajes enviados</button>
+      <div class="tarjeta-menu">
+        <h1 id="nombre-negocio">Heladería</h1>
+        <p class="subtitulo">Panel de Control</p>
+        <div class="menu">
+          <button id="btn-ir-promos" type="button">📣 Mis promos</button>
+          <button id="btn-ir-clientes" type="button">👥 Mis clientes</button>
+          <button id="btn-ir-envios" type="button">💬 Mensajes enviados</button>
+        </div>
       </div>
     </div>
   </div>
 
-<!-- MENSAJES ENVIADOS -->
+  <!-- MENSAJES ENVIADOS -->
   <div id="pantalla-envios" class="oculto">
     <header>
       <strong>Mensajes enviados</strong>
@@ -97,7 +170,7 @@
     </div>
   </div>
   
-<!-- MIS PROMOS -->
+  <!-- MIS PROMOS -->
   <div id="pantalla-lista-promos" class="oculto">
     <header>
       <strong>Mis promos</strong>
@@ -147,7 +220,7 @@
     </div>
   </div>
   
-<!-- NUEVA PROMO (ASISTENTE) -->
+  <!-- NUEVA PROMO (ASISTENTE) -->
   <div id="pantalla-promo" class="oculto">
     <header>
       <strong>Nueva promo</strong>
@@ -254,7 +327,14 @@
     async function cargarInicio() {
       const { data } = await db.from('negocios').select('id,nombre').limit(1).maybeSingle();
       negocioId = data ? data.id : null;
-      $('nombre-negocio').textContent = data ? data.nombre : 'Sin negocio asignado';
+      
+      if (data && data.nombre) {
+        // Remueve 'test ' si existe para que quede solo 'Heladería'
+        $('nombre-negocio').textContent = data.nombre.replace(/^test\s+/i, '');
+      } else {
+        $('nombre-negocio').textContent = 'Heladería';
+      }
+      
       mostrar('inicio');
     }
 
@@ -344,14 +424,13 @@
       await cargarClientes();
     }
 
-// ---------- Mensajes enviados ----------
+    // ---------- Mensajes enviados ----------
     async function cargarEnvios() {
       mostrar('envios');
       const contenedor = $('contenedor-envios');
       contenedor.innerHTML = '';
       $('resumen-envios').textContent = 'Cargando mensajes...';
 
-      // Traemos los envíos de este negocio ordenados por los más recientes
       const { data: listaEnvios, error } = await db
         .from('envios')
         .select('id, programado_para, estado, texto, clientes(nombre, telefono)')
@@ -398,7 +477,6 @@
         cabecera.appendChild(b);
         fila.appendChild(cabecera);
 
-        // Burbujita con el texto que se le envió
         if (env.texto) {
           const burbuja = document.createElement('div');
           burbuja.style.background = '#eef9f2';
@@ -416,7 +494,7 @@
       }
     }
     
-// ---------- Mis promos ----------
+    // ---------- Mis promos ----------
     async function cargarPromos() {
       mostrar('lista-promos');
       const contenedor = $('contenedor-promos');
@@ -475,12 +553,10 @@
           await cargarPromos();
         });
 
-        // Contenedor para agrupar los botones a la derecha
         const acciones = document.createElement('div');
         acciones.style.display = 'flex';
         acciones.style.gap = '.5rem';
 
-        // Botón Eliminar
         const btnBorrar = document.createElement('button');
         btnBorrar.className = 'rojo';
         btnBorrar.style.width = 'auto';
@@ -508,8 +584,7 @@
     
     // ---------- Agregar cliente ----------
     $('btn-agregar').addEventListener('click', () => {
-      $('form-agregar').reset();
-      $('error-agregar').textContent = '';
+      $('form-agregar').reset();$('error-agregar').textContent = '';
       mostrar('agregar');
     });
     $('btn-cancelar').addEventListener('click', () => mostrar('clientes'));
@@ -558,8 +633,7 @@
     // ---------- Login / salir ----------
     $('form-login').addEventListener('submit', async (e) => {
       e.preventDefault();
-      $('error').textContent = '';
-      $('btn-entrar').disabled = true;
+      $('error').textContent = '';$('btn-entrar').disabled = true;
       const { error } = await db.auth.signInWithPassword({
         email: $('email').value.trim(),
         password: $('clave').value,
@@ -575,26 +649,19 @@
       negocioId = null;
       mostrar('login');
     });
-    $('btn-ir-clientes').addEventListener('click', cargarClientes);
-    $('btn-volver').addEventListener('click', () => mostrar('inicio'));
-        // Navegación de Nueva Promo
-    $('btn-ir-promos').addEventListener('click', cargarPromos);
-    $('btn-volver-promos').addEventListener('click', () => mostrar('inicio'));
-    $('btn-nueva-promo-flotante').addEventListener('click', () => {
-      mostrarPaso(1);
-      mostrar('promo');
-    });
-    $('btn-cancelar-promo').addEventListener('click', () => mostrar('lista-promos'));
+    $('btn-ir-clientes').addEventListener('click', cargarClientes);$('btn-volver').addEventListener('click', () => mostrar('inicio'));
+
+    // Navegación de Nueva Promo
+    $('btn-ir-promos').addEventListener('click', cargarPromos);$('btn-volver-promos').addEventListener('click', () => mostrar('inicio'));
+    $('btn-nueva-promo-flotante').addEventListener('click', () => { mostrarPaso(1); mostrar('promo'); });$('btn-cancelar-promo').addEventListener('click', () => mostrar('lista-promos'));
+    
     // Botones de Mensajes enviados
-    $('btn-ir-envios').addEventListener('click', cargarEnvios);
-    $('btn-volver-envios').addEventListener('click', () => mostrar('inicio'));
+    $('btn-ir-envios').addEventListener('click', cargarEnvios);$('btn-volver-envios').addEventListener('click', () => mostrar('inicio'));
     
     // Botones del asistente
     $('btn-paso1-sig').addEventListener('click', () => mostrarPaso(2));
-    $('btn-paso2-ant').addEventListener('click', () => mostrarPaso(1));
-    $('btn-paso2-sig').addEventListener('click', () => mostrarPaso(3));
-    $('btn-paso3-ant').addEventListener('click', () => mostrarPaso(2));
-    $('btn-paso3-sig').addEventListener('click', async () => {
+    $('btn-paso2-ant').addEventListener('click', () => mostrarPaso(1));$('btn-paso2-sig').addEventListener('click', () => mostrarPaso(3));
+    $('btn-paso3-ant').addEventListener('click', () => mostrarPaso(2));$('btn-paso3-sig').addEventListener('click', async () => {
       mostrarPaso(4);
       const est = $('promo-estimacion');
       est.textContent = 'Calculando destinatarios...';
@@ -610,14 +677,12 @@
           return;
         }
 
-        // 1. Filtrar solo los clientes cuyo último consentimiento fue 'alta'
         const ultimo = {};
         for (const fila of k.data) {
           if (!(fila.cliente_id in ultimo)) ultimo[fila.cliente_id] = fila.tipo;
         }
         const activos = c.data.filter((cli) => ultimo[cli.id] === 'alta');
 
-        // 2. Aplicar el filtro según la audiencia elegida en el Paso 3
         const aud = $('promo-audiencia').value;
         let cantidad = 0;
 
@@ -626,14 +691,12 @@
         } else if (aud.startsWith('cumple-')) {
           const anticipacion = parseInt(aud.split('-')[1], 10);
           const hoy = new Date();
-          // Calculamos la fecha objetivo (hoy + anticipación)
           const target = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + anticipacion);
           const targetMes = target.getMonth() + 1;
           const targetDia = target.getDate();
 
           cantidad = activos.filter((cli) => {
             if (!cli.fecha_nacimiento) return false;
-            // Formato YYYY-MM-DD
             const partes = cli.fecha_nacimiento.split('-');
             const mesCli = parseInt(partes[1], 10);
             const diaCli = parseInt(partes[2], 10);
@@ -645,7 +708,6 @@
           const hoy = new Date();
 
           cantidad = activos.filter((cli) => {
-            // Si nunca interactuó, o pasaron más de N días
             if (!cli.ultima_interaccion) return true;
             const fechaUltima = new Date(cli.ultima_interaccion);
             const diffDias = (hoy - fechaUltima) / (1000 * 60 * 60 * 24);
@@ -661,15 +723,14 @@
     });
     $('btn-paso4-ant').addEventListener('click', () => mostrarPaso(3));
 
-        // Actualizar la vista previa tipo WhatsApp en vivo
+    // Vista previa WhatsApp
     function actualizarPreview() {
-      $('prev-titulo').textContent = $('p-titulo').value.trim() || 'Título de tu promo';
-      $('prev-detalle').textContent = $('p-detalle').value.trim() || 'Acá vas a ver cómo queda el detalle de la promo a medida que escribís.';
-      $('prev-vigencia').textContent = $('p-vigencia').value.trim() || 'Vigencia';
+      $('prev-titulo').textContent =$('p-titulo').value.trim() || 'Título de tu promo';
+      $('prev-detalle').textContent =$('p-detalle').value.trim() || 'Acá vas a ver cómo queda el detalle de la promo a medida que escribís.';
+      $('prev-vigencia').textContent =$('p-vigencia').value.trim() || 'Vigencia';
     }
     $('p-titulo').addEventListener('input', actualizarPreview);
-    $('p-detalle').addEventListener('input', actualizarPreview);
-    $('p-vigencia').addEventListener('input', actualizarPreview);
+    $('p-detalle').addEventListener('input', actualizarPreview);$('p-vigencia').addEventListener('input', actualizarPreview);
     
     // ---------- Guardar Campaña en Supabase ----------
     $('btn-crear-promo').addEventListener('click', async () => {
@@ -688,7 +749,6 @@
       btn.textContent = 'Guardando promo...';
 
       try {
-        // 1. Obtener o crear la plantilla base para este negocio
         let { data: plantilla } = await db
           .from('plantillas')
           .select('id')
@@ -713,23 +773,18 @@
           plantilla = nuevaPlantilla;
         }
 
-        // 2. Armar el disparador según lo elegido
         const tipoEnvio = $('promo-cuando').value;
         const ahora = new Date();
         let disparador = {};
 
         if (tipoEnvio === 'ahora') {
-          // Fecha local en formato YYYY-MM-DD
           const anio = ahora.getFullYear();
           const mes = String(ahora.getMonth() + 1).padStart(2, '0');
           const dia = String(ahora.getDate()).padStart(2, '0');
           const fechaStr = `${anio}-${mes}-${dia}`;
-
-          // Hora local HH:MM
           const horaStr = ahora.toTimeString().slice(0, 5);
           disparador = { tipo: 'fecha', fecha: fechaStr, hora: horaStr };
         } else {
-          // Mañana local
           const manana = new Date(ahora);
           manana.setDate(manana.getDate() + 1);
           const anio = manana.getFullYear();
@@ -739,7 +794,6 @@
           disparador = { tipo: 'fecha', fecha: fechaStr, hora: '10:00' };
         }
 
-        // 3. Guardar la campaña
         const { error: errCampana } = await db.from('campanas').insert({
           negocio_id: negocioId,
           plantilla_id: plantilla.id,
@@ -748,17 +802,14 @@
           disparador: disparador,
           audiencia: (() => {
             const val = $('promo-audiencia').value;
-            // Caso inactivos: guarda {"tipo": "inactividad", "dias": 30}
             if (val.startsWith('inactivos-')) {
               const dias = parseInt(val.split('-')[1], 10);
               return { tipo: 'inactividad', dias: dias };
             }
-            // Caso cumpleaños con anticipación: guarda {"tipo": "cumpleanos", "anticipacion_dias": 3}
             if (val.startsWith('cumple-')) {
               const dias = parseInt(val.split('-')[1], 10);
               return { tipo: 'cumpleanos', anticipacion_dias: dias };
             }
-            // Caso general: {"tipo": "todos"}
             return { tipo: val };
           })(),
           activa: true,
@@ -768,10 +819,8 @@
         if (errCampana) throw errCampana;
 
         alert('¡Promo creada con éxito!');
-        // Limpiamos los campos y volvemos al inicio
         $('p-titulo').value = '';
-        $('p-detalle').value = '';
-        $('p-vigencia').value = '';
+        $('p-detalle').value = '';$('p-vigencia').value = '';
         actualizarPreview();
         await cargarPromos();
 
