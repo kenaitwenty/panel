@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club de Beneficios</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: #f0f2f5;
+      margin: 0;
+      padding: 1.5rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      padding: 2rem 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: .4rem .8rem;
+      border-radius: 20px;
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    h1 { font-size: 1.5rem; margin: 0 0 .5rem 0; color: #1e293b; }
+    p { font-size: .95rem; color: #64748b; margin: 0 0 1.5rem 0; line-height: 1.4; }
+    .form-group { text-align: left; margin-bottom: 1.2rem; }
+    label { display: block; font-size: .85rem; font-weight: 600; color: #334155; margin-bottom: .4rem; }
+    input {
+      width: 100%;
+      padding: .85rem 1rem;
+      font-size: 1rem;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: #2563eb; }
+    .btn {
+      width: 100%;
+      padding: 1rem;
+      background: #25d366;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37,211,102,0.3);
+      margin-top: .5rem;
+    }
+    .btn:active { transform: scale(0.98); }
+    .legal {
+      font-size: .75rem;
+      color: #94a3b8;
+      margin-top: 1.2rem;
+      line-height: 1.3;
+    }
+    #exito {
+      display: none;
+      padding: 1rem;
+    }
+    .check-icon {
+      font-size: 3rem;
+      color: #25d366;
+      margin-bottom: .5rem;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div class="card">
+    <div id="formulario-box">
+      <div class="badge">🎁 Beneficios Exclusivos</div>
+      <h1 id="titulo-local">¡Sumate al Club!</h1>
+      <p>Registrate en 10 segundos para recibir promos especiales y un regalo en tu cumpleaños.</p>
+
+      <form id="registro-form">
+        <div class="form-group">
+          <label for="nombre">Tu Nombre y Apellido</label>
+          <input type="text" id="nombre" required placeholder="Ej: Lucas Pérez">
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">WhatsApp (con código de área)</label>
+          <input type="tel" id="telefono" required placeholder="Ej: 3425123456">
+        </div>
+
+        <div class="form-group">
+          <label for="cumple">Fecha de Cumpleaños</label>
+          <input type="date" id="cumple" required>
+        </div>
+
+        <button type="submit" class="btn" id="btn-enviar">Quiero mis beneficios ✨</button>
+      </form>
+
+      <div class="legal">
+        Al registrarte aceptás recibir promociones y novedades por WhatsApp. Podés desuscribirte cuando quieras.
+      </div>
+    </div>
+
+    <!-- Pantalla de éxito tras enviar -->
+    <div id="exito">
+      <div class="check-icon">✓</div>
+      <h2>¡Listo, ya sos parte!</h2>
+      <p>Tus datos quedaron guardados. Muy pronto vas a recibir novedades y promos pensadas para vos.</p>
+    </div>
+  </div>
+
+  <script>
+    // Configuración de Supabase (usá tus mismas keys públicas de index.html)
+    const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+    const SUPABASE_ANON_KEY = 'TU_ANON_KEY_PUBLICA';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Obtener el slug del negocio desde la URL (ej: registro.html?negocio=heladeria)
+    const params = new URLSearchParams(window.location.search);
+    const slugNegocio = params.get('negocio') || 'heladeria';
+
+    const form = document.getElementById('registro-form');
+    const btn = document.getElementById('btn-enviar');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      const nombre = document.getElementById('nombre').value;
+      const telefono = document.getElementById('telefono').value;
+      const cumple = document.getElementById('cumple').value;
+
+      try {
+        const { data, error } = await db.rpc('registrar_cliente_publico', {
+          p_slug_negocio: slugNegocio,
+          p_nombre: nombre,
+          p_telefono: telefono,
+          p_fecha_nacimiento: cumple || null
+        });
+
+        if (error || !data.ok) {
+          alert('Hubo un inconveniente: ' + (error ? error.message : data.error));
+          btn.disabled = false;
+          btn.textContent = 'Quiero mis beneficios ✨';
+          return;
+        }
+
+        // Mostrar confirmación limpia
+        document.getElementById('formulario-box').style.display = 'none';
+        document.getElementById('exito').style.display = 'block';
+
+      } catch (err) {
+        console.error(err);
+        alert('Error de conexión. Intentá nuevamente.');
+        btn.disabled = false;
+        btn.textContent = 'Quiero mis beneficios ✨';
+      }
+    });
+  </script>
+</body>
+</html>
