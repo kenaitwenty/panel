@@ -144,7 +144,7 @@
 
       try {
         const { data, error } = await db.rpc('registrar_cliente_publico', {
-          p_slug_negocio: slugNegocio,
+          p_nombre_negocio: 'helad', // Busca el negocio de la heladería
           p_nombre: nombre,
           p_telefono: telefono,
           p_fecha_nacimiento: cumple || null
